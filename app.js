@@ -1,15 +1,23 @@
 const express = require("express");
 const app = express();
-const db = require("./config/keys").mongoURI;
 const mongoose = require("mongoose");
+const db = require("./config/keys").mongoURI;
+const users = require("./routes/api/users");
+const tweets = require("./routes/api/tweets");
 const bodyParser = require("body-parser");
+
 const passport = require('passport');
 const path = require('path');
+if (process.env.NODE_ENV === 'production') {
+    app.use(express.static('frontend/build'));
+    app.get('/', (req, res) => {
+      res.sendFile(path.resolve(__dirname, 'frontend', 'build', 'index.html'));
+    })
+  }
+  
 
 // const User = require("./models/User");
 
-const users = require("./routes/api/users");
-const tweets = require("./routes/api/tweets");
 
 // Connect to MongoDB using Mongoose
 mongoose
@@ -17,37 +25,22 @@ mongoose
     .then(() => console.log("Connected to mongoDB"))
     .catch(err => console.log(err));
 
-app.use(passport.initialize());
-require('./config/passport')(passport);
 
+app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
     extended: false
 }));
-app.use(bodyParser.json());
+
+app.use(passport.initialize());
+require('./config/passport')(passport);
+
+const port = process.env.PORT || 5000;
 
 
-
-app.get("/", (req, res) => res.send("Hello World!"));
-// app.get("/",(req, res) => {
-//     const user = new User({
-//         handle: "jim",
-//         email: "jim@jim.jim",
-//         password: "jimisgreate123"
-//     })
-//     user.save();
-//     res.send("Hello world!");
-// });
 
 app.use("/api/users", users);
 app.use("/api/tweets", tweets);
 
 // Tell sever which part to run on
-const port = process.env.PORT || 5000;
-app.listen(port, () => {console.log(`Listening on port ${port}`)});
 
-if (process.env.NODE_ENV === 'production') {
-    app.use(express.static('frontend/build'));
-    app.get('/', (req, res) => {
-      res.sendFile(path.resolve(__dirname, 'frontend', 'build', 'index.html'));
-    })
-  }
+app.listen(port, () => {console.log(`Listening on port ${port}`)});
