@@ -44,3 +44,4 @@ app.use("/api/tweets", tweets);
 // Tell sever which part to run on
 
 app.listen(port, () => {console.log(`Listening on port ${port}`)});
+// app.listen(port, () => {console.log(`Listening on port ${port}`)});
